@@ -1,6 +1,6 @@
 -- The place's story beside the world map, after upstream's Spoken_Places/UI/MapPanel.lua.
 --
--- A parchment panel on the right of the map shows the story of the zone the map displays, with
+-- A panel beside the map, on its right, shows the story of the zone the map displays, with
 -- Play and Stop, and the zone's subzones that have a story of their own. Clicking a subzone in
 -- the list, or on the map itself, shows its story; "Back to <zone>" returns. A "Story" button at
 -- the top of the map shows and hides the panel (db.mapPanel).
@@ -11,7 +11,7 @@ ns.MapPanel = MapPanel
 
 local Places = ns.Places
 local WIDTH = 300
-local ROWS = 12
+local ROWS = 8
 
 local panel, toggle
 local shown = {} -- { zoneID, zone, storyZone, key, entry }
@@ -58,7 +58,7 @@ local function DrawList()
 			local heard = Places:Heard(item[1], item[2])
 			local voiced = Places:HasClip(item[1], item[2])
 			row.label:SetText((item[3].name or item[2]) .. (voiced and "" or " |cff999999(text)|r"))
-			row.label:SetTextColor(heard and 0.55 or 0.25, heard and 0.45 or 0.18, heard and 0.35 or 0.05)
+			row.label:SetTextColor(heard and 0.6 or 1, heard and 0.6 or 0.92, heard and 0.6 or 0.75)
 			if shown.key == item[2] then row:LockHighlight() else row:UnlockHighlight() end
 			row:Show()
 		else
@@ -100,21 +100,29 @@ local function Button(parent, label, width)
 end
 
 local function Create()
-	panel = CreateFrame("Frame", "SpokenMapStory", WorldMapDetailFrame)
+	-- Beside the map, not on it: its left edge on the map's right edge, as tall as the map. On
+	-- the full map that covers the quest list while the story is open; the small map has room
+	-- to its right. A child of WorldMapFrame, not of the map itself, which the game scales down.
+	panel = CreateFrame("Frame", "SpokenMapStory", WorldMapFrame)
 	panel:SetWidth(WIDTH)
-	panel:SetPoint("TOPRIGHT", WorldMapDetailFrame, "TOPRIGHT", -4, -4)
-	panel:SetPoint("BOTTOMRIGHT", WorldMapDetailFrame, "BOTTOMRIGHT", -4, 4)
+	panel:SetPoint("TOPLEFT", WorldMapDetailFrame, "TOPRIGHT", 2, 0)
+	panel:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, "BOTTOMRIGHT", 2, 0)
 	-- The map's own layers sit at fixed levels up to WORLDMAP_POI_FRAMELEVEL (100), and the
 	-- invisible WorldMapButton that takes map clicks sits at 90. The panel goes above them all,
 	-- or the map would take its clicks. Set before its children are made, so they follow.
 	panel:SetFrameLevel((WORLDMAP_POI_FRAMELEVEL or 100) + 10)
 	panel:EnableMouse(true)
+	-- A dark, nearly solid page, as upstream's panel has: a plain colour first, so there is a
+	-- background even if a texture is missing, then the dialog box's border.
+	local bg = panel:CreateTexture(nil, "BACKGROUND")
+	bg:SetPoint("TOPLEFT", 4, -4)
+	bg:SetPoint("BOTTOMRIGHT", -4, 4)
+	bg:SetTexture(0.06, 0.05, 0.04, 0.92)
 	panel:SetBackdrop({
-		bgFile = [[Interface\QuestFrame\QuestBG]],
-		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]], edgeSize = 14,
-		insets = { left = 3, right = 3, top = 3, bottom = 3 },
+		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]], edgeSize = 16,
+		insets = { left = 4, right = 4, top = 4, bottom = 4 },
 	})
-	panel:SetBackdropBorderColor(0.6, 0.5, 0.35, 1)
+	panel:SetBackdropBorderColor(0.75, 0.62, 0.38, 1)
 
 	panel.back = CreateFrame("Button", nil, panel)
 	panel.back:SetHeight(16)
@@ -129,8 +137,7 @@ local function Create()
 	title:SetPoint("TOPLEFT", 14, -28)
 	title:SetPoint("RIGHT", -14, 0)
 	title:SetJustifyH("LEFT")
-	title:SetTextColor(0.18, 0.12, 0.06)
-	title:SetShadowColor(0, 0, 0, 0)
+	title:SetTextColor(1, 0.82, 0)
 	panel.title = title
 
 	panel.play = Button(panel, "Play", 70)
@@ -159,7 +166,7 @@ local function Create()
 	text:SetPoint("TOPLEFT")
 	text:SetWidth(WIDTH - 50)
 	text:SetJustifyH("LEFT")
-	text:SetTextColor(0.18, 0.12, 0.06)
+	text:SetTextColor(0.95, 0.92, 0.85)
 	text:SetSpacing(2)
 	panel.text = text
 	child:SetScript("OnUpdate", function(self)
@@ -174,7 +181,7 @@ local function Create()
 	-- The zone's places.
 	panel.listHeader = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	panel.listHeader:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 14, ROWS * 16 + 14)
-	panel.listHeader:SetTextColor(0.3, 0.2, 0.05)
+	panel.listHeader:SetTextColor(1, 0.82, 0)
 	panel.listScroll = CreateFrame("ScrollFrame", "SpokenMapStoryList", panel, "FauxScrollFrameTemplate")
 	panel.listScroll:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 10, 10)
 	panel.listScroll:SetWidth(WIDTH - 42); panel.listScroll:SetHeight(ROWS * 16)
