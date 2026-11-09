@@ -27,8 +27,11 @@ Upstream\Readables\Checksum.lua
 Upstream\Readables\Books.lua
 Upstream\Places\Zones.lua
 Upstream\Places\Subzones.lua
+Upstream\Places\ZonesRecorded.lua
+Upstream\Places\SubzonesRecorded.lua
 Upstream\Places\AreaZones.lua
 Upstream\Places\ForeverAreas.lua
 Upstream\Bosses\Bosses.lua
 Upstream\Bosses\Creatures.lua
 Upstream\Bosses\Stories.lua
+Upstream\Bosses\StoriesRecorded.lua

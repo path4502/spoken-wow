@@ -16,8 +16,19 @@ ns.Places = Places
 local lore = { zones = {}, subzones = {} }
 function ns:ShouldLoadLanguage(code) return code == "enUS" end
 function ns:RegisterLoreData(code, kind, data)
-	if code == "enUS" and lore[kind] then
-		for k, v in pairs(data) do lore[kind][k] = v end
+	-- Loaded twice: master's lore, then the lore the installed pack was recorded from, which wins
+	-- entry by entry (see wotlk/sync-upstream.sh).
+	if code ~= "enUS" or not lore[kind] then return end
+	for k, v in pairs(data) do
+		if kind == "subzones" and type(lore.subzones[k]) == "table" then
+			for area, entry in pairs(v) do
+				if type(entry) == "table" and entry.full and entry.full ~= "" then lore.subzones[k][area] = entry end
+			end
+		elseif kind == "zones" and type(lore.zones[k]) == "table" and not (v.full and v.full ~= "") then
+			-- keep master's
+		else
+			lore[kind][k] = v
+		end
 	end
 end
 

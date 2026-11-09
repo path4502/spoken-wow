@@ -215,7 +215,7 @@ H.map.continent, H.map.zone = 2, 1
 SpokenMapStory:Show()
 SpokenMapStory.scripts.OnShow()
 check(SpokenMapStory.title.text == "Tirisfal Glades", "the map panel shows the map's zone: " .. tostring(SpokenMapStory.title.text))
-check(SpokenMapStory.text.text:find("Lordaeron", 1, true), "with its story")
+check(SpokenMapStory.text.text:find("sickly green", 1, true), "with the story its recording says (the pack's tag, not master)")
 check(SpokenMapStory.list and #SpokenMapStory.list > 3, "and its places")
 WorldMapFrameAreaLabel.text = "Brill"
 WorldMapButton.scripts.OnMouseUp(WorldMapButton, "LeftButton")
