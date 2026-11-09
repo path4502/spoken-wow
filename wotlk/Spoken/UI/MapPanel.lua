@@ -203,7 +203,7 @@ local function CreateToggle()
 	toggle = CreateFrame("Button", "SpokenMapStoryToggle", WorldMapFrame, "UIPanelButtonTemplate")
 	toggle:SetWidth(80); toggle:SetHeight(22)
 	toggle:SetText("Story")
-	toggle:SetPoint("BOTTOMRIGHT", WorldMapDetailFrame, "TOPRIGHT", 0, 4)
+	MapPanel:PlaceToggle()
 	toggle:SetFrameLevel(WorldMapDetailFrame:GetFrameLevel() + 25)
 	toggle:SetScript("OnClick", function()
 		ns.db.mapPanel = not ns.db.mapPanel
@@ -216,6 +216,19 @@ local function CreateToggle()
 		GameTooltip:Show()
 	end)
 	toggle:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
+-- The full map has a strip above the map with the zone menus and Zoom Out; the button goes
+-- right after Zoom Out there. The small map has no such strip (its corners hold the title,
+-- the close button and the floor menu), so the button sits in the map's bottom-left corner.
+function MapPanel:PlaceToggle()
+	if not toggle then return end
+	toggle:ClearAllPoints()
+	if WorldMapZoomOutButton and WorldMapZoomOutButton:IsShown() then
+		toggle:SetPoint("LEFT", WorldMapZoomOutButton, "RIGHT", 4, 0)
+	else
+		toggle:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, "BOTTOMLEFT", 6, 6)
+	end
 end
 
 function MapPanel:Update()
@@ -233,6 +246,9 @@ function MapPanel:Enable()
 	if not WorldMapFrame or not WorldMapDetailFrame then return end
 	Create()
 	CreateToggle()
+	WorldMapFrame:HookScript("OnShow", function() MapPanel:PlaceToggle() end)
+	if WorldMap_ToggleSizeUp then hooksecurefunc("WorldMap_ToggleSizeUp", function() MapPanel:PlaceToggle() end) end
+	if WorldMap_ToggleSizeDown then hooksecurefunc("WorldMap_ToggleSizeDown", function() MapPanel:PlaceToggle() end) end
 	self:Update()
 	ns:On("WORLD_MAP_UPDATE", function()
 		if WorldMapFrame:IsShown() then MapPanel:ShowZone() end
