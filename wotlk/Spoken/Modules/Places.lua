@@ -120,6 +120,14 @@ function Places:SubzonesIn(zoneID)
 	return list
 end
 
+--- How much lore loaded: zones, zones with subzone stories.
+function Places:LoreCount()
+	local z, s = 0, 0
+	for _ in pairs(lore.zones) do z = z + 1 end
+	for _ in pairs(lore.subzones) do s = s + 1 end
+	return z, s
+end
+
 function Places:HasClip(mapID, key)
 	return Clip(mapID, key) ~= nil
 end

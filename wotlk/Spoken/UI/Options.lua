@@ -333,6 +333,11 @@ local function Status()
 	for name, why in pairs(ns.packs.failed) do
 		ns:Print("  %s did not load: %s", name, why)
 	end
+	local zones, subzones = ns.Places:LoreCount()
+	local books = 0
+	for _ in pairs(SpokenReadablesData and SpokenReadablesData.pages or {}) do books = books + 1 end
+	ns:Print("lore loaded: %d zones, %d with subzones, %d book pages, boss data %s", zones, subzones, books,
+		SpokenBossCreatures and "yes" or "no")
 	local zoneID, zone = ns.Places:Zone()
 	local storyZone, key = ns.Places:Subzone()
 	ns:Print("zone \"%s\" -> %s; subzone \"%s\" -> %s", GetRealZoneText() or "", zoneID and tostring(zoneID) or "no lore",

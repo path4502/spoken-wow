@@ -23,6 +23,8 @@ prepare() {
 	local dir="$1"
 	for toc in "$dir"/*.toc; do
 		sed -i 's/^## Interface:.*/## Interface: 30300/' "$toc"
+		# 3.3.5 only finds a .toc's files by backslash paths (Data\Sounds.lua, not Data/Sounds.lua).
+		sed -i '/^[^#]/ s#/#\\#g' "$toc"
 	done
 	if [ -f "$dir/Module.lua" ] && grep -q '\.ogg' "$dir/Module.lua"; then
 		command -v ffmpeg >/dev/null || { echo "ffmpeg is needed to convert $dir" >&2; exit 1; }
