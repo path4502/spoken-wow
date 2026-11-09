@@ -104,7 +104,10 @@ local function Create()
 	panel:SetWidth(WIDTH)
 	panel:SetPoint("TOPRIGHT", WorldMapDetailFrame, "TOPRIGHT", -4, -4)
 	panel:SetPoint("BOTTOMRIGHT", WorldMapDetailFrame, "BOTTOMRIGHT", -4, 4)
-	panel:SetFrameLevel(WorldMapDetailFrame:GetFrameLevel() + 20)
+	-- The map's own layers sit at fixed levels up to WORLDMAP_POI_FRAMELEVEL (100), and the
+	-- invisible WorldMapButton that takes map clicks sits at 90. The panel goes above them all,
+	-- or the map would take its clicks. Set before its children are made, so they follow.
+	panel:SetFrameLevel((WORLDMAP_POI_FRAMELEVEL or 100) + 10)
 	panel:EnableMouse(true)
 	panel:SetBackdrop({
 		bgFile = [[Interface\QuestFrame\QuestBG]],
@@ -204,7 +207,7 @@ local function CreateToggle()
 	toggle:SetWidth(80); toggle:SetHeight(22)
 	toggle:SetText("Story")
 	MapPanel:PlaceToggle()
-	toggle:SetFrameLevel(WorldMapDetailFrame:GetFrameLevel() + 25)
+	toggle:SetFrameLevel((WORLDMAP_POI_FRAMELEVEL or 100) + 15)
 	toggle:SetScript("OnClick", function()
 		ns.db.mapPanel = not ns.db.mapPanel
 		MapPanel:Update()
@@ -218,16 +221,17 @@ local function CreateToggle()
 	toggle:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
--- The full map has a strip above the map with the zone menus and Zoom Out; the button goes
--- right after Zoom Out there. The small map has no such strip (its corners hold the title,
--- the close button and the floor menu), so the button sits in the map's bottom-left corner.
+-- In the title bar, left of the button that makes the map bigger or smaller. That corner is
+-- free on both map sizes; the strip under it holds the zone menus, Zoom Out and the floor menu.
 function MapPanel:PlaceToggle()
 	if not toggle then return end
 	toggle:ClearAllPoints()
-	if WorldMapZoomOutButton and WorldMapZoomOutButton:IsShown() then
-		toggle:SetPoint("LEFT", WorldMapZoomOutButton, "RIGHT", 4, 0)
+	local size = WorldMapFrameSizeDownButton
+	if WorldMapFrameSizeUpButton and WorldMapFrameSizeUpButton:IsShown() then size = WorldMapFrameSizeUpButton end
+	if size then
+		toggle:SetPoint("RIGHT", size, "LEFT", -2, 0)
 	else
-		toggle:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, "BOTTOMLEFT", 6, 6)
+		toggle:SetPoint("TOPRIGHT", WorldMapFrame, "TOPRIGHT", -60, -4)
 	end
 end
 
