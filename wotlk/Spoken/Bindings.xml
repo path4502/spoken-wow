@@ -1,0 +1,14 @@
+<Bindings>
+	<Binding name="SPOKEN_STOP" header="SPOKEN">
+		Spoken.Sound:Skip()
+	</Binding>
+	<Binding name="SPOKEN_STOPALL">
+		Spoken.Sound:StopAll()
+	</Binding>
+	<Binding name="SPOKEN_REPLAY">
+		Spoken.Sound:Replay()
+	</Binding>
+	<Binding name="SPOKEN_PLACE">
+		Spoken.Places:PlayHere()
+	</Binding>
+</Bindings>

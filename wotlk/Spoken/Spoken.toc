@@ -1,0 +1,33 @@
+## Interface: 30300
+## Title: |cffb48cffSpoken|r
+## Notes: Reads the game aloud: quests, gossip, places, books and boss stories, from Spoken's voice packs. 3.3.5a port.
+## Version: 3.8.4-wotlk.1
+## Author: rusty (Spoken), 3.3.5 port for path4502
+## SavedVariables: SpokenDB
+## SavedVariablesPerCharacter: SpokenCharDB
+## X-License: Addon code MIT (see LICENSE). Data under Upstream/ is upstream Spoken's; see its THIRD_PARTY.md.
+## X-Website: https://github.com/path4502/spoken-wow/tree/wotlk-3.3.5/wotlk
+
+Core.lua
+Sound.lua
+Modules\Quests.lua
+Modules\Readables.lua
+Modules\Places.lua
+Modules\Bosses.lua
+UI\Narrator.lua
+UI\Options.lua
+
+# Upstream's data, copied unchanged by wotlk/sync-upstream.sh.
+Upstream\Quests\Aliases.lua
+Upstream\Quests\FollowupLines.lua
+Upstream\Quests\ChatterLines.lua
+Upstream\Quests\QuestText.lua
+Upstream\Readables\Checksum.lua
+Upstream\Readables\Books.lua
+Upstream\Places\Zones.lua
+Upstream\Places\Subzones.lua
+Upstream\Places\AreaZones.lua
+Upstream\Places\ForeverAreas.lua
+Upstream\Bosses\Bosses.lua
+Upstream\Bosses\Creatures.lua
+Upstream\Bosses\Stories.lua
