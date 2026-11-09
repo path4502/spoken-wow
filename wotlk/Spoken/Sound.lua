@@ -163,9 +163,9 @@ Sound.queue = queue
 function Sound:Enqueue(item, front, interrupt)
 	if type(item.path) ~= "string" or not item.len then return false end
 	item.key = item.key or item.path
-	if current and current.key == item.key then return false end
+	if current and current.key == item.key then return false, "playing" end
 	for _, queued in ipairs(queue) do
-		if queued.key == item.key then return false end
+		if queued.key == item.key then return false, "queued" end
 	end
 	if #queue >= (ns.db.maxQueue or 8) then
 		table.remove(queue) -- drop the newest waiting line, never the one playing

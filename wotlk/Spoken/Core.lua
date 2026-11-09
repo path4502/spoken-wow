@@ -125,6 +125,7 @@ ns.defaults = {
 	places = true,
 	autoplayZones = true,
 	autoplaySubzones = true,
+	mapPanel = true,
 	placesInCombat = false,
 	-- Bosses
 	bosses = true,

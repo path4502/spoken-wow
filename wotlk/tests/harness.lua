@@ -124,6 +124,8 @@ function Frame:SetText(t) self.text = t end
 function Frame:GetText() return self.text end
 function Frame:GetFont() return "Fonts\\FRIZQT__.TTF", 16 end
 function Frame:GetWidth() return 140 end
+function Frame:GetFrameLevel() return 1 end
+function Frame:GetHeight() return 10 end
 function Frame:GetBottom() return 200 end
 function Frame:GetEffectiveScale() return 1 end
 function Frame:GetCenter() return 0, 0 end
@@ -146,6 +148,18 @@ UIParent = newObject("Frame", "UIParent")
 Minimap = newObject("Frame", "Minimap")
 QuestLogFrame = newObject("Frame", "QuestLogFrame")
 GameTooltip = newObject("GameTooltip", "GameTooltip")
+WorldMapFrame = newObject("Frame", "WorldMapFrame")
+WorldMapDetailFrame = newObject("Frame", "WorldMapDetailFrame")
+WorldMapButton = newObject("Button", "WorldMapButton")
+WorldMapFrameAreaLabel = newObject("FontString", "WorldMapFrameAreaLabel")
+H.map = { continent = 0, zone = 0, zones = { [2] = { "Tirisfal Glades", "Elwynn Forest" } } }
+GetCurrentMapContinent = function() return H.map.continent end
+GetCurrentMapZone = function() return H.map.zone end
+GetMapZones = function(c) return unpack(H.map.zones[c] or {}) end
+GetMapContinents = function() return "Kalimdor", "Eastern Kingdoms" end
+FauxScrollFrame_GetOffset = function() return 0 end
+FauxScrollFrame_Update = function() end
+FauxScrollFrame_OnVerticalScroll = function() end
 DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) log("print", msg) end }
 
 function H.fire(event, ...)

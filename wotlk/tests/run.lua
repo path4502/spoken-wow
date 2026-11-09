@@ -209,6 +209,29 @@ H.advance(1)
 check(SpokenWindow and SpokenWindow.shown and not SpokenSubtitles.shown, "the small window shows instead")
 S.Sound:StopAll()
 
+-- The story panel on the world map: Tirisfal Glades, then a click on Brill.
+S.db.style = "subtitles"
+H.map.continent, H.map.zone = 2, 1
+SpokenMapStory:Show()
+SpokenMapStory.scripts.OnShow()
+check(SpokenMapStory.title.text == "Tirisfal Glades", "the map panel shows the map's zone: " .. tostring(SpokenMapStory.title.text))
+check(SpokenMapStory.text.text:find("Lordaeron", 1, true), "with its story")
+check(SpokenMapStory.list and #SpokenMapStory.list > 3, "and its places")
+WorldMapFrameAreaLabel.text = "Brill"
+WorldMapButton.scripts.OnMouseUp(WorldMapButton, "LeftButton")
+check(SpokenMapStory.title.text == "Brill", "a click on a place shows its story")
+SpokenMapStory.play.scripts.OnClick()
+cur = S.Sound:Current()
+check(cur and cur.key == "s:1420:brill", "Play reads the place shown: " .. tostring(cur and cur.key))
+S.Sound:StopAll()
+-- /sp place while the story already plays says so, not "no recording".
+H.reset()
+H.zone, H.subzone = "Tirisfal Glades", ""
+SlashCmdList.SPOKEN("place")
+SlashCmdList.SPOKEN("place")
+check(#H.find("print", "already playing") == 1, "/sp place says when the story is already playing")
+S.Sound:StopAll()
+
 -- Slash commands do not error.
 for _, cmd in ipairs({ "", "status", "help", "place", "replay", "stop", "stopall", "style voice", "debug", "debug" }) do
 	SlashCmdList.SPOKEN(cmd)

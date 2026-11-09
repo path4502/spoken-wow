@@ -15,6 +15,7 @@ Modules\Readables.lua
 Modules\Places.lua
 Modules\Bosses.lua
 UI\Narrator.lua
+UI\MapPanel.lua
 UI\Options.lua
 
 # Upstream's data, copied unchanged by wotlk/sync-upstream.sh.

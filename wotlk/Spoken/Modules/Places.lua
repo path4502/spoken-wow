@@ -67,8 +67,6 @@ local function Packs()
 	return list
 end
 
-function Places:PackCount() return #Packs() end
-
 local function Clip(mapID, key)
 	for _, pack in ipairs(Packs()) do
 		local entry
@@ -82,6 +80,54 @@ local function Clip(mapID, key)
 		end
 	end
 end
+
+function Places:PackCount() return #Packs() end
+
+--- The uiMapID and lore entry of a zone, by its name as the client writes it.
+function Places:ZoneByName(name)
+	BuildIndex()
+	local id = zoneByName[ns:NormaliseAreaKey(name)]
+	return id, id and lore.zones[id]
+end
+
+--- The story of a subzone of `zoneID` called `name`: storyZone, key, entry.
+function Places:SubzoneOf(zoneID, name)
+	BuildIndex()
+	local key = ns:NormaliseAreaKey(name)
+	key = key and ns.ForeverNames and ns.ForeverNames[key] or key
+	if not zoneID or not key then return end
+	local storyZone = storyZoneOf[zoneID] and storyZoneOf[zoneID][key] or zoneID
+	local entry = lore.subzones[storyZone] and lore.subzones[storyZone][key]
+	if entry then return storyZone, key, entry end
+end
+
+--- Every subzone story told in `zoneID`, sorted by name: { storyZone, key, entry }...
+function Places:SubzonesIn(zoneID)
+	BuildIndex()
+	local list = {}
+	for key, entry in pairs(lore.subzones[zoneID] or {}) do
+		local moved = ns.AreaZones and ns.AreaZones[zoneID] and ns.AreaZones[zoneID][key]
+		local hidden = ns.NotOnForever and ns.NotOnForever[zoneID] and ns.NotOnForever[zoneID][key]
+		if not moved and not hidden and entry.full and entry.full ~= "" then
+			list[#list + 1] = { zoneID, key, entry }
+		end
+	end
+	for key, storyZone in pairs(storyZoneOf[zoneID] or {}) do
+		local entry = lore.subzones[storyZone] and lore.subzones[storyZone][key]
+		if entry and entry.full and entry.full ~= "" then list[#list + 1] = { storyZone, key, entry } end
+	end
+	table.sort(list, function(a, b) return (a[3].name or a[2]) < (b[3].name or b[2]) end)
+	return list
+end
+
+function Places:HasClip(mapID, key)
+	return Clip(mapID, key) ~= nil
+end
+
+function Places:Heard(mapID, key)
+	return ns.char.heardPlaces[key and ("s:" .. mapID .. ":" .. key) or ("z:" .. mapID)] and true or false
+end
+
 
 --- The zone the player is in: uiMapID, entry.
 function Places:Zone()
@@ -111,23 +157,33 @@ end
 
 function Places:Play(mapID, key, entry, front)
 	local path, len = Clip(mapID, key)
-	if not path then return false end
+	if not path then return false, "none" end
 	local id = key and ("s:" .. mapID .. ":" .. key) or ("z:" .. mapID)
-	local queued = ns.Sound:Enqueue({
+	return ns.Sound:Enqueue({
 		kind = "place", path = path, len = len, key = id,
 		name = entry and entry.name or GetRealZoneText(), title = key and GetRealZoneText() or nil,
 		text = entry and (entry.full or entry.short),
 		onStart = function() ns.char.heardPlaces[id] = true end,
 	}, front)
-	return queued
 end
 
 --- /sp place: the subzone's story where it has one, else the zone's.
+--- Returns true, or false and why: "none" (no recording), "playing" or "queued".
 function Places:PlayHere()
 	local storyZone, key, entry = self:Subzone()
-	if storyZone and self:Play(storyZone, key, entry, true) then return true end
+	local why
+	if storyZone then
+		local ok, reason = self:Play(storyZone, key, entry, true)
+		if ok then return true end
+		why = reason
+	end
 	local zoneID, zone = self:Zone()
-	return zoneID and self:Play(zoneID, nil, zone, true) or false
+	if zoneID then
+		local ok, reason = self:Play(zoneID, nil, zone, true)
+		if ok then return true end
+		if reason ~= "none" or not why then why = reason end
+	end
+	return false, why or "none"
 end
 
 local pending

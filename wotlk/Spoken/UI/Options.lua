@@ -174,6 +174,10 @@ local function Build()
 	Place(Check(page, "Tell a zone's story the first time you enter it", nil, DB("autoplayZones")))
 	Place(Check(page, "Tell a subzone's story the first time you enter it", nil, DB("autoplaySubzones")))
 	Place(Check(page, "Also in combat", nil, DB("placesInCombat")))
+	Place(Check(page, "Story panel on the world map", nil, function() return ns.db.mapPanel end, function(v)
+		ns.db.mapPanel = v
+		ns.MapPanel:Update()
+	end))
 	local forget = CreateFrame("Button", Name("Button"), page, "UIPanelButtonTemplate")
 	forget:SetWidth(200); forget:SetHeight(22)
 	forget:SetText("Forget places heard")
@@ -350,7 +354,18 @@ SlashCmdList.SPOKEN = function(input)
 	elseif cmd == "replay" then
 		ns.Sound:Replay()
 	elseif cmd == "place" or cmd == "zone" then
-		if not ns.Places:PlayHere() then ns:Print("no recording for this place.") end
+		local ok, why = ns.Places:PlayHere()
+		if not ok then
+			if why == "playing" then
+				ns:Print("this place's story is already playing.")
+			elseif why == "queued" then
+				ns:Print("this place's story is already waiting in the queue.")
+			elseif ns.Places:PackCount() == 0 then
+				ns:Print("no places voice pack is loaded (SpokenPlacesAudio).")
+			else
+				ns:Print("no recording for this place.")
+			end
+		end
 	elseif cmd == "book" then
 		ns.Readables:ReadOnScreen(true)
 	elseif cmd == "boss" then
