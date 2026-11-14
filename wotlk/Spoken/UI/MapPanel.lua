@@ -100,13 +100,14 @@ local function Button(parent, label, width)
 end
 
 local function Create()
-	-- Beside the map, not on it: its left edge on the map's right edge, as tall as the map. On
-	-- the full map that covers the quest list while the story is open; the small map has room
-	-- to its right. A child of WorldMapFrame, not of the map itself, which the game scales down.
+	-- On the map's own right edge, as tall as the map: the one place that is on screen for
+	-- every map size (the full map with no quest list reaches the screen's edge, and beside the
+	-- small map it was cut off). A child of WorldMapFrame, not of the map, which the game scales;
+	-- its width follows the map's shown size (MapPanel:Layout). The Story button hides it.
 	panel = CreateFrame("Frame", "SpokenMapStory", WorldMapFrame)
 	panel:SetWidth(WIDTH)
-	panel:SetPoint("TOPLEFT", WorldMapDetailFrame, "TOPRIGHT", 2, 0)
-	panel:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, "BOTTOMRIGHT", 2, 0)
+	panel:SetPoint("TOPRIGHT", WorldMapDetailFrame, "TOPRIGHT", -2, -2)
+	panel:SetPoint("BOTTOMRIGHT", WorldMapDetailFrame, "BOTTOMRIGHT", -2, 2)
 	-- The map's own layers sit at fixed levels up to WORLDMAP_POI_FRAMELEVEL (100), and the
 	-- invisible WorldMapButton that takes map clicks sits at 90. The panel goes above them all,
 	-- or the map would take its clicks. Set before its children are made, so they follow.
@@ -162,6 +163,7 @@ local function Create()
 	local child = CreateFrame("Frame", nil, scroll)
 	child:SetWidth(WIDTH - 50); child:SetHeight(10)
 	scroll:SetScrollChild(child)
+	scroll.child = child
 	local text = child:CreateFontString(nil, "ARTWORK", "QuestFont")
 	text:SetPoint("TOPLEFT")
 	text:SetWidth(WIDTH - 50)
@@ -242,6 +244,27 @@ function MapPanel:PlaceToggle()
 	end
 end
 
+--- Sizes the panel to the map as it is shown now: at most WIDTH, and never more than 42% of
+--- the map, so the small map keeps most of itself in view.
+function MapPanel:Layout()
+	if not panel then return end
+	local ratio = WorldMapDetailFrame:GetEffectiveScale() / WorldMapFrame:GetEffectiveScale()
+	local mapWidth = (WorldMapDetailFrame:GetWidth() or 0) * ratio
+	local width = WIDTH
+	if mapWidth > 0 then width = math.max(200, math.min(WIDTH, math.floor(mapWidth * 0.42))) end
+	panel:SetWidth(width)
+	panel.back:SetWidth(width - 40)
+	panel.scroll.child:SetWidth(width - 50)
+	panel.text:SetWidth(width - 50)
+	panel.listScroll:SetWidth(width - 42)
+	for _, row in ipairs(panel.rows) do row:SetWidth(width - 42) end
+end
+
+local function Relayout()
+	MapPanel:PlaceToggle()
+	MapPanel:Layout()
+end
+
 function MapPanel:Update()
 	if not panel then return end
 	if ns.db.places and ns.db.mapPanel then
@@ -257,9 +280,13 @@ function MapPanel:Enable()
 	if not WorldMapFrame or not WorldMapDetailFrame then return end
 	Create()
 	CreateToggle()
-	WorldMapFrame:HookScript("OnShow", function() MapPanel:PlaceToggle() end)
-	if WorldMap_ToggleSizeUp then hooksecurefunc("WorldMap_ToggleSizeUp", function() MapPanel:PlaceToggle() end) end
-	if WorldMap_ToggleSizeDown then hooksecurefunc("WorldMap_ToggleSizeDown", function() MapPanel:PlaceToggle() end) end
+	WorldMapFrame:HookScript("OnShow", Relayout)
+	-- The map changes size in these: big or small window, with or without the quest list.
+	for _, fn in ipairs({ "WorldMap_ToggleSizeUp", "WorldMap_ToggleSizeDown",
+		"WorldMapFrame_SetQuestMapView", "WorldMapFrame_SetFullMapView" }) do
+		if _G[fn] then hooksecurefunc(fn, Relayout) end
+	end
+	Relayout()
 	self:Update()
 	ns:On("WORLD_MAP_UPDATE", function()
 		if WorldMapFrame:IsShown() then MapPanel:ShowZone() end
